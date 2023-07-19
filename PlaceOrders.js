@@ -13,8 +13,9 @@ const PlaceOrders = () => {
   const [selectedBuyer, setSelectedBuyer] = useState("");
   const navigation = useNavigation();
 
-  const handleStatusChange  = () => {
-    navigation.navigate('Orders');
+  const handleStatusChange = (value) => {
+    setSelectedStatus(value);
+    setSelectedAddress(getAddress(value));
   };
 
   const getAddress = (shipToParty) => {

@@ -8,6 +8,7 @@ import HomePage from './HomePage';
 import OrdersPage from './OrdersPage';
 import ProfilePage from './Profile.js';
 import PlaceOrders from './PlaceOrders.js';
+import OrderForm from './OrderForm';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
@@ -15,6 +16,7 @@ import { AppRegistry, View, TouchableOpacity, Text, Alert } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import styled from 'styled-components/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const firebaseConfig = {
   // Your Firebase project configuration
@@ -187,6 +189,17 @@ const App = () => {
           component={PlaceOrders}
           options={{
             title: 'Place an Order',
+            headerTitleStyle: {
+              color: '#005DA9',
+            },
+            headerTintColor: '#005DA9',
+          }}
+        />
+       <Drawer.Screen
+          name="OrderForm"
+          component={OrderForm}
+          options={{
+            title: 'OrderForm',
             headerTitleStyle: {
               color: '#005DA9',
             },
