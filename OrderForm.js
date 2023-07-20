@@ -7,7 +7,7 @@ const OrderForm = () => {
   const [articleTicket, setArticleTicket] = useState('');
   const [selectedOption, setSelectedOption] = useState('');
   const [filteredOptions, setFilteredOptions] = useState([]);
-  const alertTimeoutRef = useRef(null);
+  
 
   const allOptions = ['8850060', '8851060', '844B008', '8971T37', '8860000', '8800060', '8801060'];
   const articleTicketToShadeCardMap = new Map([

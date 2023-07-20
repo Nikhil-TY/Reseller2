@@ -189,6 +189,7 @@ const RowLabel = styled(Text)`
 const RowTextBoxContainer = styled(View)`
   flex: 1;
   align-items: flex-end;
+  
 `;
 
 const RowTextBox = styled.TextInput`
@@ -197,6 +198,7 @@ const RowTextBox = styled.TextInput`
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 4px;
+  color: black;
 `;
 
 const RowDropdownContainer = styled(View)`
