@@ -1,13 +1,52 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, FlatList, Alert } from 'react-native';
+import { View, Text, TextInput, FlatList, TouchableOpacity, Alert } from 'react-native';
 import styled from 'styled-components/native';
 import ModalDropdown from 'react-native-modal-dropdown';
+import { ScrollView } from 'react-native-gesture-handler';
+
+const shadeCardsData = [
+  {
+    ticket: '8850060',
+    shadeCard: 'J87Spadepoly8850',
+    shades: ['Shade 1', 'Shade 2', 'Shade 3', 'Shade 4', 'Shade 5', 'Shade 6', 'Shade 7', 'Shade 8', 'Shade 9', 'Shade 10', 'Shade 11', 'Shade 12', 'Shade 13', 'Shade 14', 'Shade 15'],
+  },
+  {
+    ticket: '8851060',
+    shadeCard: 'Spadepoly_8851',
+    shades: ['Shade A', 'Shade B', 'Shade C', 'Shade D', 'Shade E', 'Shade F', 'Shade G', 'Shade H', 'Shade I', 'Shade J'],
+  },
+  {
+    ticket: '844B008',
+    shadeCard: 'COLOUR ATLAS',
+    shades: ['Shade X', 'Shade Y', 'Shade Z', 'Shade P', 'Shade Q', 'Shade R', 'Shade S', 'Shade T', 'Shade U', 'Shade V', 'Shade W', 'Shade M', 'Shade N', 'Shade O', 'Shade L', 'Shade K', 'Shade J', 'Shade I', 'Shade H', 'Shade G', 'Shade F', 'Shade E', 'Shade D', 'Shade C'],
+  },
+  {
+    ticket: '8971T37',
+    shadeCard: 'MCL/TLR cut rolls',
+    shades: ['Shade T1', 'Shade T2', 'Shade T3', 'Shade T4', 'Shade T5'],
+  },
+  {
+    ticket: '8860000',
+    shadeCard: 'J33_8860',
+    shades: ['Shade 001', 'Shade 002', 'Shade 003'],
+  },
+  {
+    ticket: '8800060',
+    shadeCard: 'SPADE8800',
+    shades: ['Shade M01', 'Shade M02', 'Shade M03', 'Shade M04', 'Shade M05', 'Shade M06', 'Shade M07'],
+  },
+  {
+    ticket: '8801060',
+    shadeCard: 'SPADE_8801',
+    shades: ['Shade 1', 'Shade 2', 'Shade 3', 'Shade 4'],
+  },
+];
 
 const OrderForm = () => {
   const [articleTicket, setArticleTicket] = useState('');
   const [selectedOption, setSelectedOption] = useState('');
   const [filteredOptions, setFilteredOptions] = useState([]);
-  
+  const [shadeSets, setShadeSets] = useState([{ shadeNumber: '', quantity: '' }]);
 
   const allOptions = ['8850060', '8851060', '844B008', '8971T37', '8860000', '8800060', '8801060'];
   const articleTicketToShadeCardMap = new Map([
@@ -19,17 +58,39 @@ const OrderForm = () => {
     ['8800060', 'SPADE8800'],
     ['8801060', 'SPADE_8801'],
   ]);
+ const handleProceedButtonPress = () => {
+    if (!articleTicket) {
+      Alert.alert('Error', 'Please enter the Article number.');
+      return;
+    }
+    const selectedShadeCard = getShadeCardForArticleTicket(selectedOption);
+    if (!selectedShadeCard) {
+      Alert.alert('Error', 'Please select a valid Shade Card.');
+      return;
+    }
+    console.log('Proceeding...');
+  };
+
+  const handleShadeSetChange = (index, key, value) => {
+    if (key === 'shadeNumber') {
+      return;
+    }
+
+    const updatedShadeSets = [...shadeSets];
+    if (!updatedShadeSets[index]) {
+      updatedShadeSets[index] = {};
+    }
+    updatedShadeSets[index][key] = value;
+    setShadeSets(updatedShadeSets);
+  };
 
   const handleArticleTicketChange = (text) => {
     setArticleTicket(text);
-
-    // Filter the options based on the entered text
     const filteredOptions = allOptions.filter((option) => {
       const lowerCaseOption = option.toLowerCase();
       const lowerCaseText = text.toLowerCase();
       return lowerCaseOption.includes(lowerCaseText);
     });
-
     setFilteredOptions(filteredOptions);
     setSelectedOption('');
   };
@@ -37,18 +98,13 @@ const OrderForm = () => {
   const handleOptionSelect = (option) => {
     setSelectedOption(option);
     setArticleTicket(option);
-    setFilteredOptions([]); // Hide the options when an option is selected
+    setFilteredOptions([]);
   };
 
-  const getShadeCardForArticleTicket = (ticket) => {
-    return articleTicketToShadeCardMap.get(ticket) || '';
+  const getShadesForSelectedOption = () => {
+    const selectedShadeCardData = shadeCardsData.find((data) => data.ticket === selectedOption);
+    return selectedShadeCardData ? selectedShadeCardData.shades : [];
   };
-
-  const renderOptionItem = ({ item }) => (
-    <OptionItem onPress={() => handleOptionSelect(item)}>
-      <OptionText>{item}</OptionText>
-    </OptionItem>
-  );
 
   const renderShadeCardDropdown = () => {
     if (selectedOption !== '') {
@@ -67,6 +123,44 @@ const OrderForm = () => {
     return null;
   };
 
+  const getShadeCardForArticleTicket = (ticket) => {
+    return articleTicketToShadeCardMap.get(ticket) || '';
+  };
+
+  const renderShadeSetsTable = () => {
+    const shades = getShadesForSelectedOption();
+    const selectedShadeCardData = shadeCardsData.find((data) => data.ticket === selectedOption);
+
+
+    return (
+      <ShadeSetsTable>
+        <ShadeSetHeader>
+          <HeaderText>Shade Number</HeaderText>
+          <HeaderText>Quantity</HeaderText>
+        </ShadeSetHeader>
+        <ShadeSetContainer>
+          <ScrollView>
+            {shades.map((shade, index) => (
+              <ShadeSetRow key={index}>
+                <ShadeSetInput
+                  value={shadeSets[index]?.shadeNumber || selectedShadeCardData?.shades[index] || ''}
+                  onChangeText={(value) => handleShadeSetChange(index, 'shadeNumber', value)}
+                  inputTextColor="#000000"
+                />
+                <ShadeSetInput
+                  placeholder="Quantity"
+                  value={shadeSets[index]?.quantity || ''}
+                  onChangeText={(value) => handleShadeSetChange(index, 'quantity', value)}
+                  inputTextColor="#000000"
+                />
+              </ShadeSetRow>
+            ))}
+          </ScrollView>
+        </ShadeSetContainer>
+      </ShadeSetsTable>
+    );
+  };
+
   return (
     <Container>
       <Row>
@@ -82,7 +176,11 @@ const OrderForm = () => {
         <OptionsContainer>
           <FlatList
             data={filteredOptions}
-            renderItem={renderOptionItem}
+            renderItem={({ item }) => (
+              <OptionItem onPress={() => handleOptionSelect(item)}>
+                <OptionText>{item}</OptionText>
+              </OptionItem>
+            )}
             keyExtractor={(item) => item}
             initialScrollIndex={0}
           />
@@ -92,19 +190,13 @@ const OrderForm = () => {
         <Label>Shade Card:</Label>
         {renderShadeCardDropdown()}
       </Row>
-      <Row>
-        <Label>Search Shades:</Label>
-        <CustomTextInput
-          placeholder="Enter label text"
-          value={selectedOption} // Use selectedOption (or any other state) to store the text box value
-          onChangeText={setSelectedOption} // Update the selectedOption when the text box value changes
-          placeholderTextColor="#666" // Set placeholder text color
-        />
-      </Row>
+      {renderShadeSetsTable()}
+      <ProceedButton onPress={handleProceedButtonPress}>
+        <ProceedButtonText>Proceed</ProceedButtonText>
+      </ProceedButton>
     </Container>
   );
 };
-
 const Container = styled(View)`
   flex: 1;
   padding: 16px;
@@ -163,7 +255,62 @@ const DropdownContainer = styled(View)`
   border-radius: 4px;
   padding: 4px;
   margin-left: 10px;
-  z-index: 2; /* Set the z-index of the shade card dropdown to appear above the options container */
+  z-index: 2;
+`;
+
+const ShadeSetsTable = styled(View)`
+  margin-top: 10px;
+`;
+
+const ShadeSetHeader = styled(View)`
+  flex-direction: row;
+  justify-content: space-between;
+  background-color: #005da9;
+  padding: 16px;
+`;
+
+const HeaderText = styled(Text)`
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+`;
+
+const ShadeSetRow = styled(View)`
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 8px;
+`;
+
+const ShadeSetContainer = styled(View)`
+  background-color: #E6F2FF; 
+  border-radius: 4px;
+  height: 420px;
+`;
+
+const ShadeSetInput = styled(TextInput)`
+  height: 40px;
+  width: 150px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px;
+  color: black;
+  margin-left: 10px;
+  
+`;
+
+const ProceedButton = styled(TouchableOpacity)`
+  background-color: #005da9;
+  padding: 12px 24px;
+  border-radius: 8px;
+  align-self: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+`;
+
+const ProceedButtonText = styled(Text)`
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
 `;
 
 export default OrderForm;
