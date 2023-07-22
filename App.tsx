@@ -9,6 +9,7 @@ import OrdersPage from './OrdersPage';
 import ProfilePage from './Profile.js';
 import PlaceOrders from './PlaceOrders.js';
 import OrderForm from './OrderForm';
+import ConfirmationPage from './ConfirmationPage';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
@@ -65,6 +66,8 @@ const MenuItemText = styled.Text`
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
+  const [orderData, setOrderData] = useState({});
+  const [formData, setFormData] = useState({});
 
   useEffect(() => {
     // Simulate a loading delay for the splash screen
@@ -206,6 +209,21 @@ const App = () => {
             headerTintColor: '#005DA9',
           }}
         />
+        <Drawer.Screen
+        name="ConfirmationPage"
+        component={ConfirmationPage}
+        options={{
+          title: 'Order Confirmation',
+          headerTitleStyle: {
+            color: '#005DA9',
+          },
+          headerTintColor: '#005DA9',
+        }}
+        initialParams={{
+          orderData: orderData,
+          formData: formData,
+        }}
+      />
       </Drawer.Navigator>
     </NavigationContainer>
   );

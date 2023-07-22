@@ -3,6 +3,9 @@ import { View, Text, TextInput, FlatList, TouchableOpacity, Alert } from 'react-
 import styled from 'styled-components/native';
 import ModalDropdown from 'react-native-modal-dropdown';
 import { ScrollView } from 'react-native-gesture-handler';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/firestore';
+import { useNavigation } from '@react-navigation/native';
 
 const shadeCardsData = [
   {
@@ -47,6 +50,10 @@ const OrderForm = () => {
   const [selectedOption, setSelectedOption] = useState('');
   const [filteredOptions, setFilteredOptions] = useState([]);
   const [shadeSets, setShadeSets] = useState([{ shadeNumber: '', quantity: '' }]);
+  const [selectedBuyer, setSelectedBuyer] = useState(''); 
+  const [selectedPO, setSelectedPO] = useState(''); 
+  const navigation = useNavigation();
+
 
   const allOptions = ['8850060', '8851060', '844B008', '8971T37', '8860000', '8800060', '8801060'];
   const articleTicketToShadeCardMap = new Map([
@@ -58,7 +65,9 @@ const OrderForm = () => {
     ['8800060', 'SPADE8800'],
     ['8801060', 'SPADE_8801'],
   ]);
- const handleProceedButtonPress = () => {
+
+   
+  const handleProceedButtonPress = () => {
     if (!articleTicket) {
       Alert.alert('Error', 'Please enter the Article number.');
       return;
@@ -68,22 +77,68 @@ const OrderForm = () => {
       Alert.alert('Error', 'Please select a valid Shade Card.');
       return;
     }
-    console.log('Proceeding...');
-  };
-
-  const handleShadeSetChange = (index, key, value) => {
-    if (key === 'shadeNumber') {
-      return;
+  
+    // Check and handle missing or undefined values in shadeSets
+  const validShadeSets = shadeSets.map((shadeSet) => {
+    if (!shadeSet) {
+      // If the element is undefined, return an object with default values
+      return { shadeNumber: '', quantity: '' };
     }
 
+    // Set default values if 'shadeNumber' or 'quantity' is missing
+    const validShadeNumber = shadeSet.shadeNumber || '';
+    const validQuantity = shadeSet.quantity || '';
+    return { shadeNumber: validShadeNumber, quantity: validQuantity };
+  });
+
+  // Save the data to Firestore
+  firebase
+    .firestore()
+    .collection('orderFormData')
+    .add({
+      articleTicket: articleTicket,
+      selectedShadeCard: selectedShadeCard,
+      shadeSets: validShadeSets,
+    })
+    .then(() => {
+      console.log('Data saved successfully to Firestore from OrderForm page.');
+      console.log('Proceeding...');
+
+      // Navigate to ConfirmationPage and pass necessary data as route parameters
+      navigation.navigate('ConfirmationPage', {
+        orderData: {
+          selectedStatus: selectedOption,
+          selectedBuyer: selectedBuyer, // <-- Pass selectedBuyer
+          selectedPO: selectedPO, // <-- Pass selectedPO
+        },
+        formData: {
+          articleTicket,
+          selectedShadeCard,
+          shadeSets: validShadeSets, // <-- Pass validShadeSets
+        },
+      });
+    })
+    .catch((error) => {
+      console.error('Error saving data to Firestore from OrderForm page:', error);
+    });
+};
+
+  
+
+  const handleShadeSetChange = (index, key, value) => {
     const updatedShadeSets = [...shadeSets];
     if (!updatedShadeSets[index]) {
       updatedShadeSets[index] = {};
     }
     updatedShadeSets[index][key] = value;
     setShadeSets(updatedShadeSets);
-  };
+  
+    if (key === 'shadeNumber') {
+      return;
+    }
 
+  };
+  
   const handleArticleTicketChange = (text) => {
     setArticleTicket(text);
     const filteredOptions = allOptions.filter((option) => {
@@ -99,8 +154,10 @@ const OrderForm = () => {
     setSelectedOption(option);
     setArticleTicket(option);
     setFilteredOptions([]);
+    // Reset the selectedBuyer and selectedPO when the option is selected
+    setSelectedBuyer('');
+    setSelectedPO('');
   };
-
   const getShadesForSelectedOption = () => {
     const selectedShadeCardData = shadeCardsData.find((data) => data.ticket === selectedOption);
     return selectedShadeCardData ? selectedShadeCardData.shades : [];

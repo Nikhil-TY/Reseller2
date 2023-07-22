@@ -4,7 +4,8 @@ import styled from "styled-components/native";
 import { Picker } from "@react-native-picker/picker";
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useNavigation } from "@react-navigation/native";
-
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/firestore';
 
 const PlaceOrders = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -32,8 +33,19 @@ const PlaceOrders = () => {
   };
 
   const handleButton1Press = () => {
-    // Navigate to the OrderForm page
-    navigation.navigate("OrderForm");
+    // Save the data to Firestore
+    firebase.firestore().collection('placeOrderData').add({
+      shipToParty: selectedStatus,
+      selectedBuyer: selectedBuyer,
+      selectedPO: selectedPO, // <-- Pass selectedPO
+    })
+    .then(() => {
+      console.log('Data saved successfully to Firestore from PlaceOrders page.');
+      navigation.navigate('OrderForm', { selectedStatus, selectedBuyer, selectedPO });
+    })
+    .catch((error) => {
+      console.error('Error saving data to Firestore from PlaceOrders page:', error);
+    });
   };
 
   const handleButton2Press = () => {
